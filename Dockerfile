@@ -34,7 +34,7 @@ COPY /service/package.json /app
 
 COPY /service/pnpm-lock.yaml /app
 
-RUN pnpm install
+RUN pnpm install --no-frozen-lockfile
 
 COPY /service /app
 
