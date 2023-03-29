@@ -62,7 +62,7 @@ export async function startBot() {
     await bot.start();
   } catch (e) {
     console.error(
-      `⚠️ Bot start failed, can you log in through wechat on the web?: ${e}`
+      `⚠️ Bot start failed, can you log in through wechat on the web?`
     );
   }
 }
