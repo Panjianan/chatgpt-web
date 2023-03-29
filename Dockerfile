@@ -1,4 +1,3 @@
-
 # build front-end
 FROM node:19 AS frontend
 
