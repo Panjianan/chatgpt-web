@@ -5,6 +5,7 @@ import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
 import { auth } from './middleware/auth'
 import { limiter } from './middleware/limiter'
 import { isNotEmptyString } from './utils/is'
+import { botStatus, startBot } from './bot/main'
 
 const app = express()
 const router = express.Router()
@@ -34,11 +35,9 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       },
       systemMessage,
     })
-  }
-  catch (error) {
+  } catch (error) {
     res.write(JSON.stringify(error))
-  }
-  finally {
+  } finally {
     res.end()
   }
 })
@@ -47,8 +46,7 @@ router.post('/config', auth, async (req, res) => {
   try {
     const response = await chatConfig()
     res.send(response)
-  }
-  catch (error) {
+  } catch (error) {
     res.send(error)
   }
 })
@@ -58,8 +56,7 @@ router.post('/session', async (req, res) => {
     const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY
     const hasAuth = isNotEmptyString(AUTH_SECRET_KEY)
     res.send({ status: 'Success', message: '', data: { auth: hasAuth, model: currentModel() } })
-  }
-  catch (error) {
+  } catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
   }
 })
@@ -74,8 +71,27 @@ router.post('/verify', async (req, res) => {
       throw new Error('密钥无效 | Secret key is invalid')
 
     res.send({ status: 'Success', message: 'Verify successfully', data: null })
+  } catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
   }
-  catch (error) {
+})
+
+router.post('/wechat_status', async (req, res) => {
+  try {
+    const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY
+    const hasAuth = isNotEmptyString(AUTH_SECRET_KEY)
+
+    if (hasAuth) {
+      const { token } = req.body as { token: string }
+      if (!token)
+        throw new Error('Secret key is empty')
+
+      if (AUTH_SECRET_KEY !== token)
+        throw new Error('密钥无效 | Secret key is invalid')
+    }
+
+    res.send({ status: 'Success', message: '', data: botStatus })
+  } catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
   }
 })
@@ -85,3 +101,5 @@ app.use('/api', router)
 app.set('trust proxy', 1)
 
 app.listen(3002, () => globalThis.console.log('Server is running on port 3002'))
+
+startBot()

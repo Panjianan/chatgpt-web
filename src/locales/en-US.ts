@@ -26,6 +26,11 @@ export default {
     failed: 'Failed',
     verify: 'Verify',
     unauthorizedTips: 'Unauthorized, please verify first.',
+    alreadyLogin: '已登录',
+    notLogin: '未登录',
+    loading: '加载中...',
+    retry: '重试',
+    refresh: '刷新',
   },
   chat: {
     newChatButton: 'New Chat',
@@ -69,6 +74,7 @@ export default {
     socks: 'Socks',
     httpsProxy: 'HTTPS Proxy',
     balance: 'API Balance',
+    wechatStatus: 'Wechat status',
   },
   store: {
     siderButton: 'Prompt Store',

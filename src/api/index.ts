@@ -25,7 +25,8 @@ export function fetchChatAPIProcess<T = any>(
     prompt: string
     options?: { conversationId?: string; parentMessageId?: string }
     signal?: GenericAbortSignal
-    onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void },
+    onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
+  },
 ) {
   const settingStore = useSettingStore()
 
@@ -48,4 +49,10 @@ export function fetchVerify<T>(token: string) {
     url: '/verify',
     data: { token },
   })
+}
+
+export function fetchWechatStatus() {
+  return post({
+    url: '/wechat_status',
+  });
 }

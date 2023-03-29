@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted, reactive } from 'vue'
 import { NButton, NInput, NPopconfirm, NSelect, useMessage } from 'naive-ui'
 import type { Language, Theme } from '@/store/modules/app/helper'
 import { SvgIcon } from '@/components/common'
@@ -8,9 +8,21 @@ import type { UserInfo } from '@/store/modules/user/helper'
 import { getCurrentDate } from '@/utils/functions'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { t } from '@/locales'
+import { fetchWechatStatus } from '@/api/index'
+import VueQrcode from 'vue-qrcode'
+
+
+// import { stat } from 'fs'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
+
+const state = reactive({
+  loading: true,
+  success: false,
+  wechatLog: false,
+  wechatQrCode: null,
+})
 
 const { isMobile } = useBasicLayout()
 
@@ -58,6 +70,41 @@ const languageOptions: { label: string; key: Language; value: Language }[] = [
   { label: '繁體中文', key: 'zh-TW', value: 'zh-TW' },
   { label: 'English', key: 'en-US', value: 'en-US' },
 ]
+
+onMounted(() => {
+  getWechatStatus();
+});
+
+onUnmounted(() => {
+  if (!timer) return;
+  clearInterval(timer);
+})
+
+let timer: any = null;
+
+function getWechatStatus() {
+  state.loading = true;
+  fetchWechatStatus()
+    .then(rep => {
+      state.success = true;
+      state.wechatLog = rep.data?.login
+      state.wechatQrCode = rep.data?.qrCode
+      if (!state.wechatLog) {
+        clearInterval(timer)
+        timer = setInterval(getWechatStatus, 5000)
+      }
+    })
+    .catch(() => {
+      state.success = false;
+      state.wechatLog = false
+      state.wechatQrCode = null
+      clearInterval(timer)
+      timer = setInterval(getWechatStatus, 5000)
+    })
+    .finally(() => {
+      state.loading = false
+    })
+}
 
 function updateUserInfo(options: Partial<UserInfo>) {
   userStore.updateUserInfo(options)
@@ -150,10 +197,7 @@ function handleImportButtonClick(): void {
           {{ $t('common.save') }}
         </NButton>
       </div>
-      <div
-        class="flex items-center space-x-4"
-        :class="isMobile && 'items-start'"
-      >
+      <div class="flex items-center space-x-4" :class="isMobile && 'items-start'">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.chatHistory') }}</span>
 
         <div class="flex flex-wrap items-center gap-4">
@@ -189,11 +233,7 @@ function handleImportButtonClick(): void {
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.theme') }}</span>
         <div class="flex flex-wrap items-center gap-4">
           <template v-for="item of themeOptions" :key="item.key">
-            <NButton
-              size="small"
-              :type="item.key === theme ? 'primary' : undefined"
-              @click="appStore.setTheme(item.key)"
-            >
+            <NButton size="small" :type="item.key === theme ? 'primary' : undefined" @click="appStore.setTheme(item.key)">
               <template #icon>
                 <SvgIcon :icon="item.icon" />
               </template>
@@ -204,12 +244,8 @@ function handleImportButtonClick(): void {
       <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.language') }}</span>
         <div class="flex flex-wrap items-center gap-4">
-          <NSelect
-            style="width: 140px"
-            :value="language"
-            :options="languageOptions"
-            @update-value="value => appStore.setLanguage(value)"
-          />
+          <NSelect style="width: 140px" :value="language" :options="languageOptions"
+            @update-value="value => appStore.setLanguage(value)" />
         </div>
       </div>
       <div class="flex items-center space-x-4">
@@ -217,6 +253,20 @@ function handleImportButtonClick(): void {
         <NButton size="small" @click="handleReset">
           {{ $t('common.reset') }}
         </NButton>
+      </div>
+      <div class="flex flex-wrap items-center space-x-4">
+        <span class="flex-shrink-0 w-[100px]">{{ $t('setting.wechatStatus') }}</span>
+        <div v-if="state.loading">
+          {{ $t('common.loading') }}
+        </div>
+        <div v-else-if="state.success">
+          <div v-if="state.wechatLog">{{ $t('common.alreadyLogin') }}</div>
+          <div v-if="state.wechatQrCode" id="qrcode-container">
+            <VueQrcode :value="state.wechatQrCode" :size="200" :level="'M'" :background="'#FFFFFF'"
+              :foreground="'#000000'" :padding="10" type="image/jpeg" :color="{ dark: '#000000' }">
+            </VueQrcode>
+          </div>
+        </div>
       </div>
     </div>
   </div>

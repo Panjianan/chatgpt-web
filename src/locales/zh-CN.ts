@@ -26,6 +26,11 @@ export default {
     failed: '操作失败',
     verify: '验证',
     unauthorizedTips: '未经授权，请先进行验证。',
+    alreadyLogin: '已登录',
+    notLogin: '未登录',
+    loading: '加载中...',
+    retry: '重试',
+    refresh: '刷新',
   },
   chat: {
     newChatButton: '新建聊天',
@@ -69,6 +74,7 @@ export default {
     socks: 'Socks',
     httpsProxy: 'HTTPS Proxy',
     balance: 'API余额',
+    wechatStatus: '微信状态',
   },
   store: {
     siderButton: '提示词商店',
