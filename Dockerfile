@@ -2,12 +2,7 @@
 FROM node:lts-alpine AS frontend
 
 # We don't need the standalone Chromium
-RUN apt-get install -y wget \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update && apt-get -y install google-chrome-stable chromium  xvfb\
-    && rm -rf /var/lib/apt/lists/* \
-    && echo "Chrome: " && google-chrome --version
+RUN apt-get install -y wget
 
 RUN npm install pnpm -g
 
@@ -34,7 +29,7 @@ COPY /service/package.json /app
 
 COPY /service/pnpm-lock.yaml /app
 
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install
 
 COPY /service /app
 
