@@ -88,7 +88,9 @@ function getWechatStatus() {
     .then(rep => {
       state.success = true;
       state.wechatLog = rep.data?.login
-      state.wechatQrCode = rep.data?.qrCode
+      if (rep.data?.qrCode != state.wechatQrCode) {
+        state.wechatQrCode = rep.data?.qrCode
+      }
       if (!state.wechatLog) {
         clearInterval(timer)
         timer = setInterval(getWechatStatus, 5000)
@@ -256,7 +258,7 @@ function handleImportButtonClick(): void {
       </div>
       <div class="flex flex-wrap items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.wechatStatus') }}</span>
-        <div v-if="state.success">
+        <div :style="{ height: '200px' }">
           <div v-if="state.wechatLog">{{ $t('common.alreadyLogin') }}</div>
           <div v-else-if="state.wechatQrCode" id="qrcode-container">
             <VueQrcode :value="state.wechatQrCode" :size="200" :level="'M'" :background="'#FFFFFF'"

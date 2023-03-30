@@ -10,8 +10,7 @@ async function chatgpt(username: string, message: string): Promise<any> {
 
     // 查找最后一条消息
     const messages = DBUtils.getChatMessage(username)
-    let lastMessageIndex = messages && messages.lastIndexOf(e => e.role == ChatCompletionRequestMessageRoleEnum.Assistant)
-    let lastMessage = lastMessageIndex >= 0 ? messages[lastMessageIndex] : null
+    let lastMessage = messages?.reverse()?.find(e => e.role === ChatCompletionRequestMessageRoleEnum.Assistant)
     let lastContent = lastMessage && {
         conversationId: lastMessage?.conversationId, // 会话id
         parentMessageId: lastMessage?.messageId, // 上一条消息的id
@@ -25,21 +24,33 @@ async function chatgpt(username: string, message: string): Promise<any> {
 
     // web那边的接口会返回conversionid和messageid
     const response: any = await new Promise(async (res, rej) => {
-        let timer = setTimeout(() => res({ msg: "超时未响应" }), 5000)
+        let resFlag = false;
+        let timer
         try {
             await chatReplyProcess({
                 message: message,
                 lastContext: lastContent,
                 systemMessage: prompt,
                 process: (chat: ChatMessage) => {
+                    if (resFlag) return;
                     // 只能用时间大法了
                     clearTimeout(timer);
-                    timer = setTimeout(() => res(chat), 2000);
+                    timer = setTimeout(() => {
+                        if (!resFlag) res(chat)
+                        resFlag = true;
+                    }, 2000);
                 },
             })
         } catch (e) {
+            if (resFlag) return
             console.log("request web api error", e);
-            res({ msg: '请求错误' })
+            let errorType = Object.prototype.toString.call(e) + "";
+            if (errorType.match(/TimeoutError/i)) {
+                res({ msg: '请求超时' })
+            } else {
+                res({ msg: '请求错误' })
+            }
+            resFlag = true
         }
     })
 
