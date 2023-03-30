@@ -9,7 +9,7 @@ const chatGPTBot = new ChatGPTBot();
 
 const bot = WechatyBuilder.build({
   name: "wechat-assistant", // generate xxxx.memory-card.json and save login data for the next login
-  puppet: "wechaty-puppet-wechat",
+  puppet: "wechaty-puppet-wechat4u",
   puppetOptions: {
     uos: true
   }

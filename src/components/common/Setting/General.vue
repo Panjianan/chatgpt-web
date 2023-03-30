@@ -256,12 +256,9 @@ function handleImportButtonClick(): void {
       </div>
       <div class="flex flex-wrap items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.wechatStatus') }}</span>
-        <div v-if="state.loading">
-          {{ $t('common.loading') }}
-        </div>
-        <div v-else-if="state.success">
+        <div v-if="state.success">
           <div v-if="state.wechatLog">{{ $t('common.alreadyLogin') }}</div>
-          <div v-if="state.wechatQrCode" id="qrcode-container">
+          <div v-else-if="state.wechatQrCode" id="qrcode-container">
             <VueQrcode :value="state.wechatQrCode" :size="200" :level="'M'" :background="'#FFFFFF'"
               :foreground="'#000000'" :padding="10" type="image/jpeg" :color="{ dark: '#000000' }">
             </VueQrcode>
